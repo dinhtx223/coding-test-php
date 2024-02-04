@@ -9,6 +9,7 @@ class CreateArticles extends AbstractMigration
         $table->addColumn('user_id', 'integer')
               ->addColumn('title', 'string', ['limit' => 255])
               ->addColumn('body', 'text', ['null' => true])
+              ->addColumn('like_count', 'integer', ['default' => 0])
               ->addColumn('created_at', 'datetime')
               ->addColumn('updated_at', 'datetime')
               ->addForeignKey('user_id', 'users', 'id', ['delete'=> 'CASCADE', 'update'=> 'NO_ACTION'])

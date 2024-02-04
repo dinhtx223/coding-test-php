@@ -51,7 +51,7 @@ return function (RouteBuilder $routes): void {
 
     $routes->setExtensions(['json', 'xml']);
 
-    $routes->scope('/', function (RouteBuilder $builder): void {
+    $routes->scope('/api', function (RouteBuilder $builder): void {
         /*
          * Here, we are connecting '/' (base path) to a controller called 'Pages',
          * its action called 'display', and we pass a param to select the view file
@@ -63,6 +63,10 @@ return function (RouteBuilder $routes): void {
          * ...and connect the rest of 'Pages' controller's URLs.
          */
         $builder->connect('/pages/*', 'Pages::display');
+
+        $builder->setExtensions(['json']);
+
+        $builder->resources('Users');
 
         $builder->resources('Articles');
 

@@ -8,6 +8,7 @@ class CreateUsers extends AbstractMigration
         $table = $this->table('users');
         $table->addColumn('email', 'string', ['limit' => 255])
               ->addColumn('password', 'string', ['limit' => 255])
+              ->addColumn('token', 'string', ['null' => true])
               ->addColumn('created_at', 'datetime')
               ->addColumn('updated_at', 'datetime')
               ->create();
