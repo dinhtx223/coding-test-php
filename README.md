@@ -32,129 +32,222 @@ Set up the database:
 bin/cake migrations migrate
 ```
 
-### Accessing the Application
+Set up the sample-data for User and Article:
 
-The application should now be accessible at http://localhost:34251
-
-## How to check
-
-
-### Preparation
-- 1/ add column "like_count" to articles migration
-- 2/ add column "token" to users migration
-- 3/ add seed for articles, users 
-- 4/ run migrate command
-```
-bin/cake migrations migrate
-```
-- 5/ run seed command
 ```
 bin/cake migrations seed --seed UsersSeed
+```
+```
 bin/cake migrations seed --seed ArticlesSeed
 ```
 
+### Accessing the Application
+
+The homepage should now be accessible at http://localhost:34251
+The API should now be accessible at http://localhost:34251/api/*
+
+## How to check
+
+- Please use Postman on PC to check application
+
 ### Authentication
 
-TODO: pls summarize how to check "Authentication" bahavior
+Sample User info created by Seeding:
 
-Use plugin api-token-authenticator to check authentication api
 ```
-- 1/ install package #rrd108/api-token-authenticator": "^0.4"#
-- 2/ add new field name token into users table
-- 3/ add plugin ApiTokenAuthenticator into Application.php
-- 4/ load component Authentication.Authentication into AppController.php
-- 5/ use api Login to get token 
-- 6/ add this token to header when call API. this token will be authenticated by plugin authentication
-- 7/ you can set public for some api "view" "index" "login" by using method allowUnauthenticated
+email: "admin@admin.com"
+password: "123456"
 ```
+
+```
+email: "user@user.com"
+password: "123456"
+```
+
+Login to get token for Authentication
+
+```
+method POST: http://localhost:34251/api/users/login.json
+    body {"email": "admin@admin.com", "password": "123456"}
+```
+#### Get the token from user data response to setup Authorization in Postman
+1. Select tab Authorization in Postman
+2. Chose Type "API key"
+3. On the right side, config following:
+- Add value "Token" for "Key" input
+- Add token from login user data response above for "Value" input
+- Chose "Header" for "Add to" Selection
 
 ### Article Management
 
-TODO: pls summarize how to check "Article Management" bahavior
+1. #### Getting list articles
+
+- Permission: All user.
+
 ```
-- 1/ create model (entity,table) for articles by using command bin/cake bake model articles
-- 2/ create controller for articles by using command bin/cake bake controller articles
-- 3/ change viewClasses of AppController to JsonView::class
-- 4/ add json extension and Article resource  to routes
-- 5/ modify actions in ArticlesController to build serialize response
-- 6/ set public for "view", "index" api by using method allowUnauthenticated
-- 7/ add check author of article when call delete or edit api.
+method GET: http://localhost:34251/api/articles.json
 ```
+
+2. ####  Get detail article by id
+
+- Permission: All user.
+
+```
+method GET: http://localhost:34251/api/articles/1.json
+```
+
+
+3. ####  Create an article
+
+- Permission: Authenticated users.
+
+- Case 1: authenticated user ( require login )
+
+```
+method POST: http://localhost:34251/api/articles.json
+    body {"title": "authenticated user title", "body": "authenticated user body"}
+```
+
+Response: 200. an article object created successfully.
+
+- Case 2: Not authenticated user ( logout first by Logout API = GET: http://localhost:34251/api/users/logout.json)
+
+```
+method POST: http://localhost:34251/api/articles.json
+    body {"title": "Not authenticated user Title", "body": "Not authenticated user Body"}
+```
+
+Response: 401 "Authentication is required to continue",
+
+- Case 3: no body param
+
+```
+method POST: http://localhost:34251/api/articles.json
+```
+
+Response: 200: "Error when create article."
+
+
+4. ####  Edit an article
+
+- Permission: Authenticated users & article writer users.
+
+- Case 1: authenticated user and the writer (require login by user 'admin@admin.com') 
+
+```
+method PUT: http://localhost:34251/api/articles/1.json
+    {"title": "updated my post title", "body": "updated my post body"}
+```
+
+Response: 200. "Updated article successfully"
+
+- Case 2: authenticated user and NOT the writer (require login by user 'user@user.com').
+
+```
+method PUT: http://localhost:34251/api/articles/1.json
+    {"title": "updated other writer title", "body": "updated other writer body"}
+```
+
+Response: 401. "Unauthorized. You have no - Permission",
+
+- Case 3: Not authenticated user ( require logout = GET: http://localhost:34251/api/users/logout.json)
+
+```
+method PUT: http://localhost:34251/api/articles/1.json
+    {"title": "Not authenticated user title", "body": "Not authenticated user body"}
+```
+
+Response: 401. "Authentication is required to continue",
+
+5. ####  Delete an article
+
+- Permission: Authenticated users & article writer users.
+
+- Case 1: authenticated user and the writer (require login by user 'user@user.com') 
+
+```
+method DELETE: http://localhost:34251/api/articles/2.json
+```
+
+Response: 200. "Deleted article successfully"
+
+- Case 2: authenticated user and NOT the writer (require login by user 'admin@admin.com').
+
+```
+method DELETE: http://localhost:34251/api/articles/2.json
+```
+
+Response: 401. "Unauthorized. You have no - Permission",
+
+- Case 3: Not authenticated user ( require logout )
+
+```
+method DELETE: http://localhost:34251/api/articles/1.json
+```
+
+Response: 401. "Authentication is required to continue",
+
+
 ### Like Feature
 
-TODO: pls summarize how to check "Like Feature" bahavior
+1. ####  Like an article
+
+- Permission: Authenticated users     
+
+- Case 1: authenticated user (require login) 
+
 ```
-- 1/ create new table likes by command
-bin/cake bake migration CreateLikes article_id:integer user_id:integer created_at updated_at
-- 2/ add new field like_count into articles table to view like count when get an article
-- 3/ add behavior "CounterCache" to LikesTable refer to like_count
-- 4/ add "cascadeCallbacks" to relation Likes in ArticlesTable to update like_count when like an article
-- 5/ create action "like" in ArticlesController
-- 6/ check article exist and like exist with condition authenticated user and article, if this article has not liked by this user, make it liked!
-- 7/ because we set public only for "view", "index" api, so #like" action was valid only for authenticated user
-```
-LOGIN info:
-```
-email: "admin@admin.com"
-password: "123456'
+method GET: http://localhost:34251/api/articles/like/1.json
 ```
 
-AUTHENTICATION 
-header param
-```
-Token:"key-from-login-api"
-```
-============USERS Management API============
+Response: 200. "You have liked this article successfully"
 
-Login
+- Case 2: authenticated user & liked article (require login) 
+
 ```
-POST: http://localhost:34251/api/users/login.json
-    body {"email": "admin@admin.com", "password": "123456"}
-```
-Logout
-```
-GET: http://localhost:34251/api/users/logout.json
-```
-List
-```
-GET: http://localhost:34251/api/users.json
-```
-Add
-```
-POST: http://localhost:34251/api/users.json
-    body {"email": "email@email.com", "password": "password"}
-```
-Edit
-```
-PUT: http://localhost:34251/api/users/{id}.json
-    body {"email": "email@email.com", "password": "password"}
-```
-Delete
-```
-DELETE: http://localhost:34251/api/users/{id}.json
+method GET: http://localhost:34251/api/articles/like/1.json
 ```
 
-============ARTICLES Management API============
+Response: 200. "You liked this article before"
 
-List
+- Case 3: Not authenticated user
+
 ```
-GET: http://localhost:34251/api/articles.json
+method GET: http://localhost:34251/api/articles/like/1.json
 ```
-Add
+
+Response: 401. "Authentication is required to continue"
+
+2. ####  View like count 
+
+- Permission: All user 
+
+- Case 1: detail article
+
 ```
-POST: http://localhost:34251/api/articles.json
-    body {"title": "title", "body": "body"}
+method GET: http://localhost:34251/api/articles/1.json
 ```
-Edit
+
+Response: an article object with "like_count" field
+
+- Case 2: list article
+
 ```
-PUT: http://localhost:34251/api/articles/{id}.json
-    ody {"title": "title", "body": "body"}
+method GET: http://localhost:34251/api/articles.json
 ```
-Delete
+
+Response: an array of articles object with "like_count" field
+
+### Common
+
+- Not found article
+
 ```
-DELETE: http://localhost:34251/api/articles/{id}.json
+method GET: http://localhost:34251/api/articles/99.json
+method PUT: http://localhost:34251/api/articles/99.json
+method DELETE: http://localhost:34251/api/articles/99.json
+method GET: http://localhost:34251/api/articles/like/99.json
+
 ```
-like
-```
-GET: http://localhost:34251/api/articles/like/{id}.json
-```
+
+Response: "Record not found in table \"articles\"",

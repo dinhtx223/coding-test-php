@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Model\Table;
 
+use Cake\Event\EventInterface;
 use Cake\ORM\Query;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
@@ -90,5 +91,20 @@ class LikesTable extends Table
         $rules->add($rules->existsIn('user_id', 'Users'), ['errorField' => 'user_id']);
 
         return $rules;
+    }
+
+    /**
+     * @param EventInterface $event
+     * @param $entity
+     * @param $options
+     */
+    public function beforeSave(EventInterface $event, $entity, $options)
+    {
+        if ($entity->isNew() && !$entity->created_at && !$entity->updated_at) {
+            $entity->created_at = new \DateTime();
+            $entity->updated_at = new \DateTime();
+        } else {
+            $entity->updated_at = new \DateTime();
+        }
     }
 }
