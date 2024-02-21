@@ -71,7 +71,8 @@ method POST: http://localhost:34251/api/users/login.json
     body {"email": "admin@admin.com", "password": "123456"}
 ```
 
-![Alt text](https://prnt.sc/xa1nWawq_4Gz)
+<img src="https://prnt.sc/xa1nWawq_4Gz" alt="Login" style="width:800px;"/>
+
 
 #### Get the token from user data response to setup Authorization in Postman
 1. Select tab Authorization in Postman
@@ -81,7 +82,7 @@ method POST: http://localhost:34251/api/users/login.json
 - Add token from login user data response above for "Value" input
 - Chose "Header" for "Add to" Selection
 
-![Alt text](https://prnt.sc/th_j943q3GvJ)
+<img src="https://prnt.sc/th_j943q3GvJ" alt="Authentication setup" style="width:800px;"/>
 
 ### Article Management
 
